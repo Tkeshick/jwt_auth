@@ -28,7 +28,7 @@ class UserService {
       password: hashPass,
     })
     // отправляем юзеру на почту письмо с активацией
-    await mailService.sendActivationMail(email, activationLink)
+    await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`)
 
     // формируем  data transfer object 
     const userDto = new UserDto(newUser)
