@@ -36,7 +36,11 @@ class UserController {
 
   async activate(req, res, next) {
     try {
-
+      // из строки запроса получаем ссылку активации
+      const activateLink = req.params.link
+      // обращаемся к юзеру сервису и передаем туда ссылку
+      await userService.activate(activateLink)
+      return res.redirect(process.env.CLIENT_URL)
     } catch (error) {
       console.log(error);
     }

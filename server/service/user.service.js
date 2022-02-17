@@ -26,6 +26,7 @@ class UserService {
     const newUser = await User.create({
       email,
       password: hashPass,
+      activationLink
     })
     // отправляем юзеру на почту письмо с активацией
     await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`)
@@ -42,6 +43,29 @@ class UserService {
       ...tokens,
       user: userDto
     }
+  }
+
+  // активация по ссылке
+  async activate(activationLink) {
+    // ищем пользователя по ссылке
+    const user = await User.findOne({
+      where: {
+        activationLink
+      }
+    })
+
+    // проверка пользователя в базе
+    if (!user) {
+      throw new Error(`Неккоректная ссылка активации`)
+    }
+    // обноваляем статус ссылки с почты
+    await User.update(
+      { isActivated: true },
+      {
+        where: {
+          activationLink
+        },
+      });
   }
 }
 
