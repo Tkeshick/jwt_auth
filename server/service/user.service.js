@@ -4,6 +4,7 @@ const uuid = require('uuid')
 const mailService = require('./mail.service.js')
 const tokenService = require('./token.service')
 const UserDto = require('../dtos/user.dto')
+const ApiError = require('../exceptions/api.errors.js')
 
 class UserService {
   async register(email, password) {
@@ -15,7 +16,7 @@ class UserService {
     })
     //  наличие юзера - ошибка
     if (candidate) {
-      throw new Error(`Пользователь с ${email} почтой уже существует`)
+      throw ApiError.BadRequest(`Пользователь с ${email} почтой уже существует`)
     }
     // хэшируем пароль
     const salt = 3;
@@ -56,7 +57,7 @@ class UserService {
 
     // проверка пользователя в базе
     if (!user) {
-      throw new Error(`Неккоректная ссылка активации`)
+      throw ApiError.BadRequest(`Неккоректная ссылка активации`)
     }
     // обноваляем статус ссылки с почты
     await User.update(

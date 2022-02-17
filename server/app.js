@@ -6,7 +6,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const router = require('./routes/ingex.js')
-
+const errorMiddleware = require('./middlewares/errors.middleware.js')
 
 const PORT = process.env.PORT ?? 5000;
 const app = express();
@@ -26,6 +26,8 @@ app.use(cors());
 
 
 app.use('/api', router)
+// обазательно должен идти послденим 
+app.use(errorMiddleware)
 
 const start = async () => {
   try {

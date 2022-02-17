@@ -1,4 +1,5 @@
 const userService = require("../service/user.service");
+const ApiError = require('../exceptions/api.errors.js')
 
 class UserController {
   async register(req, res, next) {
@@ -12,7 +13,7 @@ class UserController {
       res.cookie('refreshToken', userData.refreshToken, { maxAge: 1000 * 60 * 60 * 24 * 30, httpOnly: true })
       return res.json(userData)
     } catch (error) {
-      console.log(error);
+      next(error)
     }
   }
 
@@ -21,7 +22,7 @@ class UserController {
     try {
 
     } catch (error) {
-      console.log(error);
+      next(error)
     }
   }
 
@@ -30,7 +31,7 @@ class UserController {
     try {
 
     } catch (error) {
-      console.log(error);
+      next(error)
     }
   }
 
@@ -42,7 +43,7 @@ class UserController {
       await userService.activate(activateLink)
       return res.redirect(process.env.CLIENT_URL)
     } catch (error) {
-      console.log(error);
+      next(error)
     }
   }
 
@@ -50,7 +51,7 @@ class UserController {
     try {
 
     } catch (error) {
-      console.log(error);
+      next(error)
     }
   }
 
@@ -58,7 +59,7 @@ class UserController {
     try {
       res.json(['Hello'])
     } catch (error) {
-      console.log(error);
+      next(error)
     }
   }
 }
