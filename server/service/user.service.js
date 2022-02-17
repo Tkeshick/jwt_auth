@@ -5,6 +5,7 @@ const mailService = require('./mail.service.js')
 const tokenService = require('./token.service')
 const UserDto = require('../dtos/user.dto')
 const ApiError = require('../exceptions/api.errors.js')
+const { all } = require('sequelize/dist/lib/operators')
 
 class UserService {
   async register(email, password) {
@@ -68,6 +69,79 @@ class UserService {
         },
       });
   }
+
+  // функция логина 
+  async login(email, password) {
+    // ищем пользователя в базе
+    const user = await User.findOne({
+      where: {
+        email
+      }
+    })
+    //если нет, то  ошибка
+    if (!user) {
+      throw ApiError.BadRequest(`Пользователь не найден`)
+    }
+    // проверка паролей с бд
+    // 1ый - пришедший, второй - с бд
+    const isPassEqual = await bcrypt.compare(password, user.password)
+    if (!isPassEqual) {
+      throw ApiError.BadRequest(`Пароли не совпадают`)
+    }
+    // генерируем новую dto 
+    const userDto = new UserDto(user);
+    // генерируем пару токенов
+    const tokens = tokenService.generateTokens({ ...userDto })
+    // сохраняем рефреш токены в бд
+    await tokenService.saveToken(userDto.id, tokens.refreshToken)
+    return {
+      ...tokens,
+      user: userDto
+    }
+  }
+
+  async logout(refreshToken) {
+    // удаляем токен
+    const token = await tokenService.removeToken(refreshToken)
+    return token
+  }
+
+  async refresh(refreshToken) {
+    // проверяем токен
+    if (!refreshToken) {
+      throw ApiError.UnaurhorizedError()
+    }
+    // валидируем токен
+    const userData = tokenService.validateRefreshToken(refreshToken)
+    // отправляем токен в функцию, которая найдет его в бд
+    const tokenFromDB = await tokenService.findToken(refreshToken)
+
+    if (!userData || !tokenFromDB) {
+      throw ApiError.UnaurhorizedError()
+    }
+
+    const currentUser = await User.findOne({
+      where: {
+        id: userData.id,
+      }
+    })
+    // генерируем новую dto 
+    const userDto = new UserDto(currentUser);
+    // генерируем пару токенов
+    const tokens = tokenService.generateTokens({ ...userDto })
+    // сохраняем рефреш токены в бд
+    await tokenService.saveToken(userDto.id, tokens.refreshToken)
+    return {
+      ...tokens,
+      user: userDto
+    }
+  }
+
+  async getAllUsers() {
+    const allUsers = await User.findAll()
+    return allUsers
+  }
+
 }
 
 module.exports = new UserService()

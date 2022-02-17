@@ -30,7 +30,13 @@ class UserController {
 
   async login(req, res, next) {
     try {
-
+      // вытасикиваем данные из тела запроса
+      const { email, password } = req.body
+      // вытваем из юзер сервиса и передадим майл и апроль
+      const userData = await userService.login(email, password)
+      // установим рефреш куки
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: 1000 * 60 * 60 * 24 * 30, httpOnly: true })
+      return res.json(userData)
     } catch (error) {
       next(error)
     }
@@ -39,6 +45,13 @@ class UserController {
 
   async logout(req, res, next) {
     try {
+      // вытаскиваем рефреш токе
+      const { refreshToken } = req.cookies
+      // передаем в сервис рефрешнутый токен
+      const token = await userService.logout(refreshToken)
+      // в ответе удаляем куку
+      res.clearCookie('refreshToken')
+      return res.json(token)
 
     } catch (error) {
       next(error)
@@ -59,7 +72,12 @@ class UserController {
 
   async refresh(req, res, next) {
     try {
-
+      // доастаем из кук токен
+      const { refreshToken } = req.cookies
+      const userData = await userService.refresh(refreshToken)
+      // установим рефреш куки
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: 1000 * 60 * 60 * 24 * 30, httpOnly: true })
+      return res.json(userData)
     } catch (error) {
       next(error)
     }
@@ -67,7 +85,8 @@ class UserController {
 
   async getUsers(req, res, next) {
     try {
-      res.json(['Hello'])
+      const allUsers = await userService.getAllUsers()
+      res.json(allUsers)
     } catch (error) {
       next(error)
     }
