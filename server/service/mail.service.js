@@ -10,7 +10,7 @@ class MailService {
       host: process.env.SMTP_HOST,
       // Порт для TLS/STARTTLS
       port: process.env.SMTP_PORT,
-      secure: false,
+      secure: true,
       auth: {
         // почта и пароль отправителя
         user: process.env.SMTP_USER_SHARE,
