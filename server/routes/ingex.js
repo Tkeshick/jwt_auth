@@ -2,6 +2,7 @@ const Router = require('express').Router
 const userConroller = require('../controllers/users.controller.js')
 const router = new Router()
 const { body } = require('express-validator')
+const authMiddleware = require('../middlewares/auth.middleware.js')
 
 router.post('/register',
   body('email').isEmail(),
@@ -16,7 +17,7 @@ router.get('/activate/:link', userConroller.activate)
 // перезаписывать фксесс токен когда токен помрет
 router.get('/refresh', userConroller.refresh)
 
-router.get('/users', userConroller.getUsers)
+router.get('/users', authMiddleware, userConroller.getUsers)
 
 module.exports = router;
 
